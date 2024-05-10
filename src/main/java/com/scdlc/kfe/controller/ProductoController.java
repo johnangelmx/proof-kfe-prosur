@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// CRUD   Create   -   Read    -   Update   -     Delete
-// HTTP    POST    -   GET     -    PUT     -     DELETE
 @RestController
 @RequestMapping(path = "/api/productos/")
 public class ProductoController {

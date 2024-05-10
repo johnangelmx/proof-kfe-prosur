@@ -19,6 +19,8 @@ public class Venta {
     private Usuario usuario;
 
     private int cantidad;
+
+    @Temporal(TemporalType.DATE)
     private Date fecha;
 
     public Venta(Long id, Producto producto, Usuario usuario, int cantidad, Date fecha) {

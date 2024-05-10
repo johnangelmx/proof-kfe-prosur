@@ -1,6 +1,6 @@
 package com.scdlc.kfe.controller;
 
-import com.scdlc.kfe.model.ChangePassword;
+import com.scdlc.kfe.DTO.ChangePassword;
 import com.scdlc.kfe.service.UsuarioService;
 import com.scdlc.kfe.model.Usuario;
 import org.springframework.web.bind.annotation.*;

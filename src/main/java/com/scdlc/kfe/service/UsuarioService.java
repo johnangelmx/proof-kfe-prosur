@@ -1,6 +1,6 @@
 package com.scdlc.kfe.service;
 
-import com.scdlc.kfe.model.ChangePassword;
+import com.scdlc.kfe.DTO.ChangePassword;
 import com.scdlc.kfe.model.Usuario;
 import com.scdlc.kfe.model.Venta;
 import com.scdlc.kfe.repository.UsuarioRepository;

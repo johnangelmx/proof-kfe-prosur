@@ -1,4 +1,4 @@
-package com.scdlc.kfe.model;
+package com.scdlc.kfe.DTO;
 
 public class Token {
     private final String acessToken;

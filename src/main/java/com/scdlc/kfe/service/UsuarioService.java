@@ -7,6 +7,7 @@ import com.scdlc.kfe.model.Venta;
 import com.scdlc.kfe.repository.UsuarioRepository;
 import com.scdlc.kfe.repository.VentaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +55,7 @@ public class UsuarioService {
             usuario.setContrasena( passwordEncoder.encode( usuario.getContrasena() ) );
             return usuarioRepository.save( usuario );
         } else {
-            throw new IllegalArgumentException( "El usuario con correo" + usuario.getEmail() + " ya esta registrado" );
+            throw new DuplicateKeyException( "El usuario con correo " + usuario.getEmail() + " ya esta registrado" );
         }
     }
 
@@ -100,4 +101,8 @@ public class UsuarioService {
     }
 
 
+    public Long getIdUsuario(Login login) {
+        Usuario tmp = usuarioRepository.findByEmail( login.getEmail() ).get();
+        return tmp.getId();
+    }
 }

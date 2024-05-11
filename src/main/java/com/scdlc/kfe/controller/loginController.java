@@ -1,7 +1,7 @@
 package com.scdlc.kfe.controller;
 
 import com.scdlc.kfe.DTO.Login;
-import com.scdlc.kfe.DTO.Token;
+import com.scdlc.kfe.DTO.LoginResponse;
 import com.scdlc.kfe.config.JwtFilter;
 import com.scdlc.kfe.service.UsuarioService;
 import io.jsonwebtoken.Jwts;
@@ -27,25 +27,27 @@ public class loginController {
     }
 
     @PostMapping
-    public Token loginUsuario(@RequestBody Login login) throws ServletException {
+    public LoginResponse loginUsuario(@RequestBody Login login) throws ServletException {
         if (usuarioService.validateUsuario( login )) {
-            return new Token( generateToken( login.getEmail() ) );
+            Long id = usuarioService.getIdUsuario( login );
+            String token = generateToken( login.getEmail());
+            return new LoginResponse( token, id );
         }
-        throw new ServletException( " nombre usuario o contrasena incorretos" );
+        throw new ServletException( "Nombre de usuario o contraseña incorrectos" );
     }
 
-    //? Metodo para generar token ⬇
+    //? Metodo para generar token
     private String generateToken(String login) {
-        // Creando calendario para establecer tiempo de caducidad de JWT ⬇️
+
         Calendar calendar = Calendar.getInstance();
         calendar.add( Calendar.HOUR, 10 );
-        // Creando instancia JWT ⬇️
-        return Jwts.builder() // Retorna y crea los parametros para generar el token
-                .setSubject( login ) // Subjet nombre usuario
-                .claim( "role", "user" ) //  asignacion nombre valor
-                .setIssuedAt( new Date() ) // datos actuales
-                .setExpiration( calendar.getTime() ) // datos fecha de expiracion
-                .signWith( SignatureAlgorithm.HS256, JwtFilter.secret ) // tipo de encriptacion más frase de seguridad
+
+        return Jwts.builder()
+                .setSubject( login )
+                .claim( "role", "user" )
+                .setIssuedAt( new Date() )
+                .setExpiration( calendar.getTime() )
+                .signWith( SignatureAlgorithm.HS256, JwtFilter.secret )
                 .compact();
     }
 }

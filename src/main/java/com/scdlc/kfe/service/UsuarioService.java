@@ -1,6 +1,7 @@
 package com.scdlc.kfe.service;
 
 import com.scdlc.kfe.DTO.ChangePassword;
+import com.scdlc.kfe.DTO.Login;
 import com.scdlc.kfe.model.Usuario;
 import com.scdlc.kfe.model.Venta;
 import com.scdlc.kfe.repository.UsuarioRepository;
@@ -10,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -84,18 +86,18 @@ public class UsuarioService {
         }
     }
 
-//    public boolean validateUsuario(Usuario usuario) {
-//        Optional<Usuario> userByEmail = usuarioRepository.findByEmail(usuario.getEmail());
-//        if (userByEmail.isPresent()) {
-//            Usuario user = userByEmail.get();
-////            if (user.getPassword().equals(usuario.getPassword())) {
-//            if (passwordEncoder.matches(usuario.getPassword(), user.getPassword())) { //nuevo encoder
-//                return true;
-//            }
-//
-//        }
-//        return false;
-//    }
+    public boolean validateUsuario(Login login) {
+        Optional<Usuario> userByEmail = usuarioRepository.findByEmail( login.getEmail() );
+        if (userByEmail.isPresent()) {
+            Usuario user = userByEmail.get();
+//            if (user.getPassword().equals(usuario.getPassword())) {
+            if (passwordEncoder.matches( login.getContrasena(), user.getContrasena() )) { //nuevo encoder
+                return true;
+            }
+
+        }
+        return false;
+    }
 
 
 }

@@ -161,7 +161,6 @@ const listUsers = async () => {
                     const data = await response.json();
                     // Manejar la respuesta exitosa
                     closeModal();
-                    identifier = 0;
                     toastr.remove(); // Eliminar todos los mensajes de Toastr visibles y ocultos
                     toastr["success"]("Actualización completada"); // Mostrar el nuevo mensaje de éxito
                     await recreateDataTable();
@@ -170,7 +169,6 @@ const listUsers = async () => {
                 }
 
             } else {
-                identifier = 0;
             }
         })
     });
@@ -195,7 +193,6 @@ const listUsers = async () => {
             } else {
                 redirectLogin();
             }
-            identifier = 0;
         })
     });
 

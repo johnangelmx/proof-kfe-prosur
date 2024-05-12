@@ -163,9 +163,9 @@ btnUsuarios.addEventListener("click", () => {
 })
 btnProductos.addEventListener("click", () => {
     event.preventDefault();
-    window.location.href = "../index.html"
+    window.location.href = "../pages/productos.html"
 })
 btnVentas.addEventListener("click", () => {
     event.preventDefault();
-    window.location.href = "../index.html"
+    window.location.href = "../pages/ventas.html"
 })

@@ -114,13 +114,10 @@ const listUsers = async () => {
             `
     });
 
-    // Variable global para almacenar el identificador
-    let identifier;
-
     // EDITAR USUARIO
     $('#datatable_users').off('click', '#editar').on('click', '#editar', async function (event) {
-        identifier = $(this).data('identifier');
-        const response = await fetch(`/api/usuarios/${identifier}`, {
+
+        const response = await fetch(`/api/usuarios/${$(this).data('identifier')}`, {
             headers: {
                 "Authorization": "Bearer: " + data.token
             }
@@ -149,7 +146,7 @@ const listUsers = async () => {
                 };
 
                 const queryParams = new URLSearchParams(params).toString();
-                const urlWithParams = `/api/usuarios/${identifier}?${queryParams}`;
+                const urlWithParams = `/api/usuarios/${$(this).data('identifier')}?${queryParams}`;
 
                 const response = await fetch(urlWithParams, {
                     method: 'PUT', headers: {
@@ -177,9 +174,8 @@ const listUsers = async () => {
     // ELIMINAR
     $('#datatable_users').off('click', '#eliminar').on('click', '#eliminar', async function (event) {
         const data = verifySession();
-        identifier = $(this).data('identifier');
         btnModalEliminar.addEventListener("click", async () => {
-            const response = await fetch(`/api/usuarios/${identifier}`, {
+            const response = await fetch(`/api/usuarios/${$(this).data('identifier')}`, {
                 method: 'DELETE', headers: {
                     'Authorization': `Bearer: ${data.token}`
                 }

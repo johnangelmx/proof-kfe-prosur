@@ -2,6 +2,7 @@ package com.scdlc.kfe.service;
 
 import com.scdlc.kfe.model.Producto;
 import com.scdlc.kfe.repository.ProductoRepository;
+import com.scdlc.kfe.repository.VentaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,10 +11,12 @@ import java.util.List;
 @Service
 public class ProductoService {
     private final ProductoRepository productoRepository;
+    private final VentaRepository ventaRepository;
 
     @Autowired
-    public ProductoService(ProductoRepository productoRepository) {
+    public ProductoService(ProductoRepository productoRepository, VentaRepository ventaRepository) {
         this.productoRepository = productoRepository;
+        this.ventaRepository = ventaRepository;
     }
 
     public List<Producto> getAllProductos() {
@@ -27,6 +30,8 @@ public class ProductoService {
     public Producto deleteProducto(Long id) {
         if (productoRepository.existsById( id )) {
             Producto tmpProd = productoRepository.findById( id ).get();
+            // Eliminar las ventas asociadas al producto
+            ventaRepository.deleteByProductoId(id);
             productoRepository.deleteById( id );
             return tmpProd;
         } else {

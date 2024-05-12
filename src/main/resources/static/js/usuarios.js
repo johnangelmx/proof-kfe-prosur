@@ -1,21 +1,19 @@
-// Variables DOM
-const modal = document.getElementById('modal-lg'),
-    modalDanger = document.getElementById('modal-danger'),
-    btnAgregar = document.getElementById("btnAgregar"),
-    inputDomicilio = document.getElementById("inputDomicilio"),
-    inputNombres = document.getElementById("inputNombres"),
-    inputApellidos = document.getElementById("inputApellidos"),
-    inputCorreo = document.getElementById("inputCorreo");
-// Verificacion de Inicio Unico
-const
-    data = JSON.parse(localStorage.getItem('sessionId'))
-if (!data) {
-    window.location.href = "../../PanelVM/index.html"
-}
-// Variable REGEX
-const regexNombre = /^[a-zA-Záéíóúñ][a-záéíóúñ]{1,}(?:\s+[a-zA-Záéíóúñ][a-záéíóúñ]{1,}){0,2}(?:\s+[a-zA-Záéíóúñ][a-záéíóúñ]{1,}){0,1}$/,
-    regexApellidos = /^[a-zA-Záéíóúñ][a-záéíóúñ]{1,}(?:\s+[a-zA-Záéíóúñ][a-záéíóúñ]{1,}){0,2}(?:\s+[a-zA-Záéíóúñ][a-záéíóúñ]{1,}){0,1}$/,
-    regexCorreo = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+// #region Variables DOM
+let modal = document.getElementById('modal-lg'), modalDanger = document.getElementById('modal-danger'),
+    inputNombres = document.getElementById("inputNombres"), inNombre = document.querySelector('#inputNewUser-nombre'),
+    inEmail = document.querySelector('#inputNewUser-email'),
+    inContrasena = document.querySelector('#inputNewUser-contrasena'),
+    inConfirmarContrasena = document.querySelector('#inputNewUser-confirmarContrasena'),
+    selectedValue = document.getElementById("select-rol").value;
+
+// #region Verificacion de inicio
+const verifySession = () => {
+    const data = JSON.parse(localStorage.getItem('sessionId'));
+    if (!data) {
+        redirectLogin();
+    }
+    return data;
+};
 
 // Variables para PLUGIN DataTable
 let dataTable;
@@ -37,10 +35,7 @@ const dataTableOptions = {
         "search": "Buscar:",
         "zeroRecords": "Sin resultados encontrados",
         "paginate": {
-            "first": "Primero",
-            "last": "Ultimo",
-            "next": "Siguiente",
-            "previous": "Anterior"
+            "first": "Primero", "last": "Ultimo", "next": "Siguiente", "previous": "Anterior"
         }
     },
     "responsive": true,
@@ -48,17 +43,14 @@ const dataTableOptions = {
     "autoWidth": false,
     "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
 }
-// Inicializando DataTable
 
 // Función para recrear la DataTable
 async function recreateDataTable() {
-    // Verificar si dataTable es una instancia válida de DataTable
+
     if ($.fn.DataTable.isDataTable("#datatable_users")) {
-        // Destruir la instancia existente de DataTable
         $("#datatable_users").DataTable().destroy();
     }
 
-    // Volver a cargar los datos actualizados en la tabla
     await listUsers();
 
     // Inicializar una nueva instancia de DataTable con los datos actualizados
@@ -75,13 +67,14 @@ const initDataTable = async () => {
 };
 
 
-// Obteniendo Usuario Para Reutilizar sus datos y su acceso
+// Obteniendo Usuario
 const obtenerUsuario = async () => {
+    const data = verifySession();
     const resp = await fetch(`/api/usuarios/${data.idUsuario}`, {
-        headers: {"Authorization": "Bearer: " + data.acessToken}
+        headers: {"Authorization": "Bearer: " + data.token}
     })
     if (!resp.ok) {
-        window.location.href = "../../PanelVM/index.html"
+        window.location.href = "../index.html"
     }
     return await resp.json();
 }
@@ -89,35 +82,28 @@ const obtenerUsuario = async () => {
 // Agregando la información del usuario en la barra de la izquierda
 const addInfoSidebar = async () => {
     let userdata = await obtenerUsuario()
-    usuarioPanelDerecho.innerText = `${userdata.nombres}`
+    document.querySelector('#usuarioPanelDerecho').innerText = `${userdata.nombre}`
 }
 // Ingresando Información a la tabla
 const listUsers = async () => {
-
-    const response = await fetch("/api/usuarios/", {headers: {"Authorization": "Bearer: " + data.acessToken}})
+    const data = verifySession();
+    const response = await fetch("/api/usuarios/", {headers: {"Authorization": "Bearer: " + data.token}})
     const users = await response.json()
 
     let content = ``;
     users.forEach((user, index) => {
-        let btnStatus, btnRol;
-        if (user.status) {
-            btnStatus = `<button data-identifier="${user.id}" class='btn btn-sm btn-success' id="check"><i class='fas fa-check'></i></button>`
-        } else {
-            btnStatus = `<button data-identifier="${user.id}" class='btn btn-sm btn-danger' id="stop"><i class='fas fa-stop'></i></button>`
-        }
-        if (user.rol === "cliente") {
-            btnRol = `<button data-identifier="${user.id}" class='btn btn-sm btn-success' id="cliente"><i class='fas fa-shopping-bag'></i></button>`
+        let btnRol;
+        if (user.rol === "user") {
+            btnRol = `<button data-identifier="${user.id}" class='btn btn-sm btn-success' id="user"><i class='fas fa-user-alt'></i></button>`
         } else {
             btnRol = `<button data-identifier="${user.id}" class='btn btn-sm btn-warning' id="admin"><i class='fas fa-hammer'></i></button>`
         }
         content += `
             <tr>
                 <td>${user.id}</td>
-                <td>${user.nombres}</td>
-                <td>${user.apellidos}</td>
-                <td>${user.correo}</td>
-                <td>${user.domicilio}</td>
-                <td>${btnStatus}</td>
+                <td>${user.nombre}</td>
+                <td>${user.email}</td>
+                <td>${user.rol}</td>
                 <td>${btnRol}</td>
                 <td>
                     <button data-identifier="${user.id}" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal-lg" id="editar"><i class="fas fa-pen"></i></button>
@@ -127,6 +113,7 @@ const listUsers = async () => {
             </tr>
             `
     });
+
     // Variable global para almacenar el identificador
     let identifier;
 
@@ -135,89 +122,68 @@ const listUsers = async () => {
         identifier = $(this).data('identifier');
         const response = await fetch(`/api/usuarios/${identifier}`, {
             headers: {
-                "Authorization": "Bearer: " + data.acessToken
+                "Authorization": "Bearer: " + data.token
             }
         });
         if (response.ok) {
             const user = await response.json();
-            inputCorreo.value = user.correo;
-            inputNombres.value = user.nombres;
-            inputApellidos.value = user.apellidos;
-            inputDomicilio.value = user.domicilio;
+            inputNombres.value = user.nombre;
         } else {
-            redirectLogin();
+            // redirectLogin();
         }
+
         btnGuardar.addEventListener("click", async () => {
-                const inputs = [{
-                    regex: regexCorreo,
-                    value: inputCorreo,
-                    errorMessage: "Por favor verifique que el correo esté bien escrito"
-                },
-                    {
-                        regex: regexNombre,
-                        value: inputNombres,
-                        errorMessage: "Por favor verifique que los nombres estén bien escritos"
-                    },
-                    {
-                        regex: regexApellidos,
-                        value: inputApellidos,
-                        errorMessage: "Por favor verifique que los apellidos estén bien escritos"
-                    }
-                ];
+            const nombreRegex = /^[a-zA-Z\s]{1,30}$/;
+            let isOk = true;
 
-                let isOk = true;
+            if (!nombreRegex.test(inputNombres.value.trim())) {
+                toastr.remove();
+                toastr["error"]("Nombre invalido ,verificarlo");
+                isOk = false;
+            }
 
-                inputs.forEach(input => {
-                    if (!input.regex.test(input.value.value.trim())) {
-                        toastr.remove();
-                        toastr["error"](input.errorMessage, "Guardado inválido");
-                        isOk = false;
+
+            if (isOk) {
+                const params = {
+                    nombre: `${inputNombres.value}`,
+                };
+
+                const queryParams = new URLSearchParams(params).toString();
+                const urlWithParams = `/api/usuarios/${identifier}?${queryParams}`;
+
+                const response = await fetch(urlWithParams, {
+                    method: 'PUT', headers: {
+                        'Authorization': `Bearer: ${data.token}`
                     }
                 });
 
-                if (isOk) {
-                    const params = {
-                        domicilio: `${inputDomicilio.value}`,
-                        nombres: `${inputNombres.value}`,
-                        apellidos: `${inputApellidos.value}`,
-                        correo: `${inputCorreo.value}`,
-                    };
-
-                    const queryParams = new URLSearchParams(params).toString();
-                    const urlWithParams = `/api/usuarios/${identifier}?${queryParams}`;
-
-                    const response = await fetch(urlWithParams, {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `Bearer: ${data.acessToken}`
-                        }
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        // Manejar la respuesta exitosa
-                        closeModal();
-                        toastr.remove(); // Eliminar todos los mensajes de Toastr visibles y ocultos
-                        toastr["success"]("Actualización completada"); // Mostrar el nuevo mensaje de éxito
-                        await recreateDataTable();
-                    } else {
-                        redirectLogin();
-                    }
-
+                if (response.ok) {
+                    const data = await response.json();
+                    // Manejar la respuesta exitosa
+                    closeModal();
+                    identifier = 0;
+                    toastr.remove(); // Eliminar todos los mensajes de Toastr visibles y ocultos
+                    toastr["success"]("Actualización completada"); // Mostrar el nuevo mensaje de éxito
+                    await recreateDataTable();
+                } else {
+                    // redirectLogin();
                 }
+
+            } else {
+                identifier = 0;
             }
-        )
+        })
     });
 
 
     // ELIMINAR
     $('#datatable_users').off('click', '#eliminar').on('click', '#eliminar', async function (event) {
+        const data = verifySession();
         identifier = $(this).data('identifier');
         btnModalEliminar.addEventListener("click", async () => {
             const response = await fetch(`/api/usuarios/${identifier}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer: ${data.acessToken}`
+                method: 'DELETE', headers: {
+                    'Authorization': `Bearer: ${data.token}`
                 }
             });
 
@@ -229,84 +195,22 @@ const listUsers = async () => {
             } else {
                 redirectLogin();
             }
+            identifier = 0;
         })
     });
 
 
-    // CHECK STATUS
-    $('#datatable_users').off('click', '#check').on('click', '#check', async function (event) {
-        const button = $(this);
-        const identifier = button.data('identifier');
-        const queryParams = new URLSearchParams({status: 'false'});
-        const urlWithParams = `/api/usuarios/${identifier}?${queryParams}`;
-
-        const response = await fetch(urlWithParams, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer: ${data.acessToken}`
-            }
-        });
-
-        if (response.ok) {
-            toastr.remove();
-            toastr["success"]("Cambio de estatus completado");
-
-            // Actualizar el botón con la clase y el contenido correspondientes
-            button
-                .removeClass('btn-success')
-                .addClass('btn-danger')
-                .attr('id', 'stop')
-                .html(`<i class='fas fa-stop'></i>`);
-
-            await recreateDataTable();
-        } else {
-            redirectLogin();
-        }
-    });
-
-
-    // STOP STATUS
-    $('#datatable_users').off('click', '#stop').on('click', '#stop', async function (event) {
-        const button = $(this);
-        const identifier = button.data('identifier');
-        const queryParams = new URLSearchParams({status: 'true'});
-        const urlWithParams = `/api/usuarios/${identifier}?${queryParams}`;
-
-        const response = await fetch(urlWithParams, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer: ${data.acessToken}`
-            }
-        });
-
-        if (response.ok) {
-            toastr.remove();
-            toastr["success"]("Cambio de estatus completado");
-
-            // Actualizar el botón con la clase y el contenido correspondientes
-            button
-                .removeClass('btn-danger')
-                .addClass('btn-success')
-                .attr('id', 'check')
-                .html(`<i class='fas fa-check'></i>`);
-
-            await recreateDataTable();
-        } else {
-            redirectLogin();
-        }
-    });
-
-    // CHANGE CLIENT TO ADMIN
-    $('#datatable_users').off('click', '#cliente').on('click', '#cliente', async function (event) {
+    // USER TO ADMIN
+    $('#datatable_users').off('click', '#user').on('click', '#user', async function (event) {
         const button = $(this);
         const identifier = button.data('identifier');
         const queryParams = new URLSearchParams({rol: 'admin'});
         const urlWithParams = `/api/usuarios/${identifier}?${queryParams}`;
+        const data = verifySession();
 
         const response = await fetch(urlWithParams, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer: ${data.acessToken}`
+            method: 'PUT', headers: {
+                'Authorization': `Bearer: ${data.token}`
             }
         });
 
@@ -320,23 +224,24 @@ const listUsers = async () => {
                 .addClass('btn-warning')
                 .attr('id', 'admin')
                 .html(`<i class='fas fa-hammer'></i>`);
-
             await recreateDataTable();
         } else {
+
             redirectLogin();
         }
+
     });
-    // CHANGE ADMIN TO CLIENT
+    // ADMIN TO USER
     $('#datatable_users').off('click', '#admin').on('click', '#admin', async function (event) {
         const button = $(this);
         const identifier = button.data('identifier');
-        const queryParams = new URLSearchParams({rol: 'cliente'});
+        const queryParams = new URLSearchParams({rol: 'user'});
         const urlWithParams = `/api/usuarios/${identifier}?${queryParams}`;
+        const data = verifySession();
 
         const response = await fetch(urlWithParams, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer: ${data.acessToken}`
+            method: 'PUT', headers: {
+                'Authorization': `Bearer: ${data.token}`
             }
         });
 
@@ -363,30 +268,103 @@ const listUsers = async () => {
 }
 
 // Funcion para cerrar el Modal
-function closeModal() {
-    $(modal).modal('hide'); // Cierra el modal utilizando el método "hide" de Bootstrap modal
-    $(modalDanger).modal('hide'); // Cierra el modal utilizando el método "hide" de Bootstrap modal
-
+const closeModal = () => {
+    $(modal).modal('hide');
+    $(modalDanger).modal('hide');
+    $('#modal-new-user').modal('hide')
 }
 
 // Funcion para redireccionar al login
-function redirectLogin() {
+const redirectLogin = () => {
     toastr.remove();
     toastr["error"]("Autenticación de perfil inválido, serás redireccionado al inicio de sesión en segundos");
     setTimeout(() => {
-        window.location.href = "../../PanelVM/index.html"
+        window.location.href = "../index.html"
     }, 3000);
 }
+//  Funcion para validar campos newuser
+const validarCampos = () => {
+    const nombreRegex = /^[a-zA-Z\s]{1,30}$/;
+    const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const contrasenaRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+|~=`{}\[\]:;"'<>?,./\\-])[^\s]{8,20}$/;
+    const confirmarContrasenaRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+|~=`{}\[\]:;"'<>?,./\\-])[^\s]{8,20}$/;
 
-// --- EVENTOS ---
+    if (!nombreRegex.test(inNombre.value)) {
+        toastr["error"]("El nombre debe contener solo letras y espacios, de 2 a 30 caracteres.");
+        return false;
+    }
+    if (!correoRegex.test(inEmail.value)) {
+        toastr["error"]("El correo electrónico no es válido.");
+        return false;
+    }
+    if (!contrasenaRegex.test(inContrasena.value)) {
+        toastr["info"]("Debe contener al menos una letra minúscula, una letra mayúscula, un dígito, un carácter especial y ser de longitud entre 8 y 20 caracteres.");
+        toastr["error"]("La contraseña no cumple con los requisitos.");
+        return false;
+    }
+    if (!confirmarContrasenaRegex.test(inConfirmarContrasena.value)) {
+        toastr["error"]("La confirmación de contraseña no coincide o no cumple con los requisitos.");
+        return false;
+    }
+
+    return true;
+}
+
+const registrarUsuario = async () => {
+    selectedValue = (selectedValue === 'Administrador') ? 'admin' : 'user';
+
+    let body = {
+        nombre: `${inNombre.value}`, email: `${inEmail.value}`, contrasena: `${inContrasena.value}`, rol: selectedValue
+    };
+    try {
+        const resp = await fetch(`/api/usuarios/`, {
+            method: 'POST',
+            headers: new Headers({'Content-type': 'application/json'}),
+            mode: 'cors',
+            body: JSON.stringify(body)
+        });
+        if (resp.status === 201) {
+            return true;
+        } else if (resp.status === 409) {
+            toastr["error"]("El usuario ya esta registrado, por favor inicie sesion con sus credenciales");
+            return false;
+        }
+
+    } catch (e) {
+        toastr["error"]("Error de red");
+    }
+    return false;
+}
+const limpiarInputs = () => {
+    inputNombres.value = '';
+    inNombre.value = '';
+    inEmail.value = '';
+    inContrasena.value = '';
+    inConfirmarContrasena.value = '';
+}
+// #region Listeners
+// Crear Usuario
+document.querySelector('#btn-guardarNewUser').addEventListener("click", async () => {
+    event.preventDefault();
+    if (validarCampos()) {
+        if (await registrarUsuario()) {
+            toastr["success"]("Todos los campos son válidos. ¡Registrado exitosamente!");
+            await recreateDataTable();
+            closeModal();
+            limpiarInputs();
+        }
+    }
+})
 // Cerrar Sesion
-cerrarSesion.addEventListener("click", (e) => {
+document.querySelector("#cerrarSesion").addEventListener("click", (e) => {
     e.preventDefault()
     localStorage.clear();
-    window.location.href = "../../PanelVM/index.html"
+    window.location.href = "../index.html"
 })
+
 // Evento de carga de la página
 window.addEventListener("load", async () => {
+    verifySession();
     await addInfoSidebar();
     await initDataTable();
 })

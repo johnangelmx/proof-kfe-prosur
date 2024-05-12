@@ -1,4 +1,4 @@
-// INICIO DE SESION UNICO - VERIFICAR SI LA INFORMACION DE LOGIN FUE GUARDADA
+// #region Verificacion de inicio
 const verifySession = () => {
     const data = JSON.parse(localStorage.getItem('sessionId'));
     if (!data) {
@@ -6,45 +6,42 @@ const verifySession = () => {
     }
     return data;
 };
-// AGREGAR NOMBRE DEL USUARIO EN EL PANEL IZQUIERDO
+// agregar nombre del usuario en el panel izquierdo
 const addInfoSidebar = async (data) => {
     try {
         const response = await fetch(`/api/usuarios/${data.idUsuario}`, {
             headers: {
-                "Authorization": `Bearer: ${data.acessToken}`
+                "Authorization": `Bearer: ${data.token}`
             }
         });
         const userData = await response.json();
         const usuarioPanelDerecho = document.getElementById("usuarioPanelDerecho");
-        usuarioPanelDerecho.innerText = userData.nombres;
+        usuarioPanelDerecho.innerText = userData.nombre;
     } catch (error) {
         redirectLogin();
     }
     return true;
 };
 // ----------------------------------------------------------------
-// FUNCIONES ⬇
+// #region Funciones
+const obtenerFechaActual = () => {
+    return (new Date().toISOString().slice(0, 10));
+}
+
 // Ingresar informacion a las cards
-const ordenesNuevas = async () => {
+const ventasHoy = async () => {
     try {
-        const response = await fetch(`/api/pedidos/`, {
+        const response = await fetch(`/api/ventas/hoy?hoy=${obtenerFechaActual().toString()}`, {
             headers: {
-                "Authorization": `Bearer: ${verifySession().acessToken}`
+                "Authorization": `Bearer: ${verifySession().token}`
             }
         })
         const data = await response.json();
-        let ordenesNuevas = 0;
-        data.forEach(orden => {
-            if (orden.estatus === false) {
-                ordenesNuevas++;
-            }
-        });
+        let ventas = await data.length;
+        const elemento = document.getElementById("ventas-hoy-overlay");
+        if (elemento) elemento.remove();
 
-        const elemento = document.getElementById("ordenes-nuevas-overlay");
-        if (elemento) {
-            elemento.remove();
-        }
-        document.getElementById("ordenes-nuevas").innerHTML = `<h3>${ordenesNuevas}</h3><p>Órdenes Nuevas</p>`;
+        document.getElementById("ventas-hoy").innerHTML = `<h3>${ventas}</h3><p>Ventas Totales Hoy</p>`;
     } catch (e) {
         redirectLogin();
     }
@@ -54,7 +51,7 @@ const usuariosRegistrados = async () => {
     try {
         const response = await fetch(`/api/usuarios/`, {
             headers: {
-                "Authorization": `Bearer: ${verifySession().acessToken}`
+                "Authorization": `Bearer: ${verifySession().token}`
             }
         })
         const data = await response.json();
@@ -72,75 +69,103 @@ const usuariosRegistrados = async () => {
     }
     return true;
 }
-const ordenesCompletas = async () => {
+const ventasMes = async () => {
     try {
-        const response = await fetch(`/api/pedidos/`, {
+        const response = await fetch(`/api/ventas/mes?mes=${obtenerFechaActual().toString()}`, {
             headers: {
-                "Authorization": `Bearer: ${verifySession().acessToken}`
+                "Authorization": `Bearer: ${verifySession().token}`
             }
         })
         const data = await response.json();
-        let ordenesCompletas = 0;
-        data.forEach(orden => {
-            if (orden.estatus === true) {
-                ordenesCompletas++;
-            }
-        });
-        const elemento = document.getElementById("ordenes-completas-overlay");
-        if (elemento) {
-            elemento.remove();
-        }
-        document.getElementById("ordenes-completas").innerHTML = `<h3>${ordenesCompletas}</h3><p>Órdenes Completas</p>`;
+        let ventas = await data.length;
+        const elemento = document.getElementById("ventas-mes-overlay");
+        if (elemento) elemento.remove();
+
+        document.getElementById("ventas-mes").innerHTML = `<h3>${ventas}</h3><p>Ventas Totales del Mes</p>`;
     } catch (e) {
         redirectLogin();
     }
     return true;
 }
-const cortesRegistrados = async () => {
+const productosRegistrados = async () => {
     try {
-        const response = await fetch(`/api/cortes/`, {
-            headers: {
-                "Authorization": `Bearer: ${verifySession().acessToken}`
-            }
-        })
+        const response = await fetch(`/api/productos/`)
         const data = await response.json();
-        let cortesRegistrados = 0;
-        data.forEach(corte => {
-            cortesRegistrados++;
-        });
-        const elemento = document.getElementById("cortes-registrados-overlay");
+        let productosRegistrados = await data.length;
+        const elemento = document.getElementById("productos-registrados-overlay");
         if (elemento) {
             elemento.remove();
         }
-        document.getElementById("cortes-registrados").innerHTML = `<h3>${cortesRegistrados}</h3><p>Cortes Registrados</p>`;
+        document.getElementById("productos-registrados").innerHTML = `<h3>${productosRegistrados}</h3><p>Productos Registrados</p>`;
     } catch (e) {
         redirectLogin();
     }
     return true;
 }
-// REDIRECCIONAR AL INICIO DE SESION
+const productosTabla = async () => {
+    try {
+        const response = await fetch(`/api/ventas/mas_vendidos`, {
+            headers: {
+                "Authorization": `Bearer: ${verifySession().token}`
+            }
+        })
+        if (response.ok) {
+            const tbody = document.querySelector('#tbody-masVendidos');
+            let data = await response.json();
+            await data.forEach(producto => {
+                let tr = `<tr>
+                                    <td>${producto.id}</td>
+                                    <td>${producto.nombre}</td>
+                                    <td>${producto.descripcion}</td>
+                                    <td>$ ${producto.precio}</td>
+                                    <td>${producto.cantidadStock}</td>
+                                </tr>`
+                tbody.innerHTML += tr;
+            })
+        }
+    } catch (e) {
+        redirectLogin();
+    }
+    return true;
+}
+
+
+// redireccionar al inicio de sesion
 const redirectLogin = () => {
     toastr.remove();
     toastr["error"]("Autenticación de perfil inválido, serás redireccionado al inicio de sesión en segundos");
     localStorage.clear();
     setTimeout(() => {
-        window.location.href = "../../PanelVM/index.html"
+        window.location.href = "../index.html"
     }, 3000);
 }
 // ----------------------------------------------------------------
-// EVENTOS ⬇
+// EVENTOS
 // Cerrar Sesion
 cerrarSesion.addEventListener("click", (e) => {
     e.preventDefault()
     localStorage.clear();
-    window.location.href = "../../PanelVM/index.html"
+    window.location.href = "../index.html"
 })
 
 // EVENTO AL INICIAR EL PANEL
 window.addEventListener("load", () => {
     addInfoSidebar(verifySession());
-    ordenesNuevas();
+    ventasHoy();
     usuariosRegistrados();
-    ordenesCompletas();
-    cortesRegistrados();
+    ventasMes();
+    productosRegistrados();
+    productosTabla();
+})
+btnUsuarios.addEventListener("click", () => {
+    event.preventDefault();
+    window.location.href = "../pages/usuarios.html"
+})
+btnProductos.addEventListener("click", () => {
+    event.preventDefault();
+    window.location.href = "../index.html"
+})
+btnVentas.addEventListener("click", () => {
+    event.preventDefault();
+    window.location.href = "../index.html"
 })

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -51,6 +52,25 @@ public class VentaController {
         return ventaService.obtenerVentasYStockPorProducto( idProducto );
     }
 
+    @GetMapping("/hoy")
+    public List<Venta> obtenerVentasHoy(@RequestParam("hoy") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hoy) {
+        Date fecha = java.sql.Date.valueOf( hoy );
+        System.out.println( fecha );
+        return ventaService.obtenerVentasHoy( fecha );
+    }
+
+    @GetMapping("/mes")
+    public List<Venta> obtenerVentasMes(@RequestParam("mes") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate mes) {
+        LocalDate primerDiaMes = mes.withDayOfMonth(1);
+        LocalDate ultimoDiaMes = mes.withDayOfMonth(mes.lengthOfMonth());
+
+        Date fechaInicio = java.sql.Date.valueOf(primerDiaMes);
+        Date fechaFin = java.sql.Date.valueOf(ultimoDiaMes);
+
+        return ventaService.obtenerVentasMes(fechaInicio, fechaFin);
+    }
+
+
     @PostMapping("/crear")
     public ResponseEntity<Venta> crearVenta(@RequestBody VentasDTO ventasDTO) {
         Venta venta = ventaService.crearVenta( ventasDTO );
@@ -64,12 +84,7 @@ public class VentaController {
     }
 
     @PutMapping(path = "{ventaId}")
-    public ResponseEntity<Venta> editarVenta(
-            @PathVariable("ventaId") Long id,
-            @RequestParam Long idProducto,
-            @RequestParam Long idUsuario,
-            @RequestParam int cantidad,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fecha) {
+    public ResponseEntity<Venta> editarVenta(@PathVariable("ventaId") Long id, @RequestParam Long idProducto, @RequestParam Long idUsuario, @RequestParam int cantidad, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fecha) {
         Venta ventaEditada = ventaService.editarVenta( id, idProducto, idUsuario, cantidad, fecha );
         return new ResponseEntity<>( ventaEditada, HttpStatus.OK );
     }

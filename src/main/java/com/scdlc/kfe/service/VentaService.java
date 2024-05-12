@@ -105,4 +105,12 @@ public class VentaService {
         return ventaRepository.save( venta );
     }
 
+    public List<Venta> obtenerVentasHoy(Date hoy) {
+        return ventaRepository.findByFecha( hoy );
+    }
+
+    public List<Venta> obtenerVentasMes(Date fechaInicio, Date fechaFin) {
+        return ventaRepository.findByFechaBetween( fechaInicio, fechaFin );
+    }
+
 }

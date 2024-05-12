@@ -40,7 +40,6 @@ const verifyLogin = async () => {
                     }
                 });
                 response = await response.json();
-                console.log(response);
                 if (response.rol === "admin") {
                     localStorage.setItem('sessionId', JSON.stringify(data));
                     toastr.success('¡Operación exitosa!', 'Éxito');
@@ -51,6 +50,8 @@ const verifyLogin = async () => {
             } catch {
                 toastr["error"]("Por favor verifique sus credenciales", "Ingreso Invalido")
             }
+        }else{
+            toastr["error"]("Por favor verifique sus credenciales", "Ingreso Invalido")
         }
     } catch (error) {
         toastr["error"]("Por favor verifique sus credenciales", "Ingreso Invalido")

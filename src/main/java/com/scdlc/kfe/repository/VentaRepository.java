@@ -14,8 +14,12 @@ import java.util.List;
 public interface VentaRepository extends JpaRepository<Venta, Long> {
     List<Venta> findByUsuario(Usuario usuario);
 
-    @Query(value = "SELECT * FROM ventas WHERE fecha BETWEEN :fechaInicio AND :fechaFin", nativeQuery = true)
-    List<Venta> findByFechaBetween(@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
+    List<Venta> findByFecha(Date hoy);
+
+//    @Query(value = "SELECT * FROM ventas WHERE fecha BETWEEN :fechaInicio AND :fechaFin", nativeQuery = true)
+//    List<Venta> findByFechaBetween(@Param("fechaInicio") Date fechaInicio, @Param("fechaFin") Date fechaFin);
+
+    List<Venta> findByFechaBetween(Date fechaInicio, Date fechaFin);
 
     @Query(value = "SELECT p.id FROM productos p INNER JOIN ventas v ON p.id = v.id_producto GROUP BY p.id ORDER BY SUM(v.cantidad) DESC LIMIT 3", nativeQuery = true)
     List<Long> findTop3ProductosMasVendidos();

@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Vianda Market</title>
+    <title>KFE | San Cristobal De Las Casas</title>
+
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"
           href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -18,9 +19,7 @@
     <link rel="stylesheet" href="../plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
     <link rel="stylesheet" href="../plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
     <!-- favicon -->
-    <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
-    <!-- Custom JS -->
-    <script src="../js/usuarios.js" defer></script>
+    <link rel="icon" href="../img/coffee.ico" type="image/x-icon">
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -36,7 +35,9 @@
                 <a href="./dashboard.html" class="nav-link">Inicio</a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a href="#" class="nav-link">Contacto</a>
+                <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modal-new-user">
+                    Agregar Nuevo Usuario
+                </button>
             </li>
         </ul>
         <!-- Right navbar links -->
@@ -46,14 +47,13 @@
             </li>
         </ul>
     </nav>
-
     <!-- /.navbar -->
 
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
         <a href="dashboard.html" class="brand-link text-center">
-            <span class="brand-text font-weight-light"><b>Vianda</b> Market</span>
+            <span class="brand-text font-weight-light"><b>KFE</b> SanCris</span>
         </a>
         <!-- Sidebar -->
         <div class="sidebar">
@@ -90,31 +90,6 @@
                             </p>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a href="./cortes.html" class="nav-link">
-                            <i class="nav-icon fas fa-utensils"></i>
-                            <p>
-                                Cortes
-                            </p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="./calidad.html" class="nav-link">
-                            <i class="nav-icon fas fa-id-badge"></i>
-                            <p>
-                                Calidad
-                            </p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="./gramos.html" class="nav-link">
-                            <i class="nav-icon fas fa-weight"></i>
-                            <p>
-                                Gramos
-                            </p>
-                        </a>
-                    </li>
-
                 </ul>
             </nav>
             <!-- /.sidebar-menu -->
@@ -157,9 +132,7 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Nombres</th>
-                                        <th>Apellidos</th>
                                         <th>Correo</th>
-                                        <th>Domicilio</th>
                                         <th>Estatus</th>
                                         <th>Rol</th>
                                         <th>Opciones</th>
@@ -190,24 +163,9 @@
                         <div class="modal-body">
                             <div class="card-body">
                                 <div class="form-group">
-                                    <label for="inputCorreo">Correo</label>
-                                    <input type="email" class="form-control"
-                                           placeholder="Ingresa el correo" id="inputCorreo">
-                                </div>
-                                <div class="form-group">
                                     <label for="inputNombres">Nombres</label>
                                     <input type="text" class="form-control" id="inputNombres"
                                            placeholder="Nombres">
-                                </div>
-                                <div class="form-group">
-                                    <label for="inputApellidos">Apellidos</label>
-                                    <input type="text" class="form-control" id="inputApellidos"
-                                           placeholder="Apellidos">
-                                </div>
-                                <div class="form-group">
-                                    <label for="inputDomicilio">Domicilio</label>
-                                    <input type="text" class="form-control" id="inputDomicilio"
-                                           placeholder="Domicilio">
                                 </div>
                             </div>
                             <!-- /.card-body -->
@@ -226,14 +184,14 @@
                 <div class="modal-dialog">
                     <div class="modal-content bg-danger">
                         <div class="modal-header">
-                            <h4 class="modal-title">Eliminacion Absouluta</h4>
+                            <h4 class="modal-title">Eliminacion Absoluta</h4>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
                         <div class="modal-body">
-                            <p>Está convencido de eliminar a este usuario, la eliminación es absoluta y no puede
-                                revertirse.</p>
+                            <p>La eliminación es absoluta y no puede revertirse. La eliminación también tendrá un efecto
+                                en la tabla ventas.</p>
                         </div>
                         <div class="modal-footer justify-content-between">
                             <button type="button" class="btn btn-outline-light" data-dismiss="modal">Cerrar</button>
@@ -246,6 +204,59 @@
                 <!-- /.modal-dialog -->
             </div>
             <!-- /.modal -->
+
+            <!-------------------MODEAL NEW USER----------------------->
+            <div class="modal fade" id="modal-new-user">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Agregar Nuevo Usuario</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-group">
+                                    <label for="inputNewUser-nombre">Nombre(s)</label>
+                                    <input type="text" class="form-control" id="inputNewUser-nombre"
+                                           placeholder="Ingresa Los Nombres">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputNewUser-email">Email</label>
+                                    <input type="email" class="form-control" id="inputNewUser-email"
+                                           placeholder="Ingresar Email">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputNewUser-email">Contraseña</label>
+                                    <input type="password" class="form-control" id="inputNewUser-contrasena"
+                                           placeholder="Contraseña">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputNewUser-confirmarContrasena">Confirmar Contraseña</label>
+                                    <input type="password" class="form-control" id="inputNewUser-confirmarContrasena"
+                                           placeholder="Confirmar Contraseña">
+                                </div>
+                                <div class="form-group">
+                                    <label for="select-rol">Selecciona El Rol</label>
+                                    <select class="custom-select form-control-border" id="select-rol">
+                                        <option id="admin">Administrador</option>
+                                        <option id="user">Usuario (Cliente)</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-primary" id="btn-guardarNewUser">Guardar Cambios</button>
+                        </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+            <!-- /.modal -->
+
         </section>
         <!-- /.content -->
     </div>
@@ -259,7 +270,7 @@
 
     <!-- Main Footer -->
     <footer class="main-footer">
-        <strong>Copyright &copy; 2023 <a href="">LCS Tech</a>.</strong>
+        <strong>Copyright &copy; 2023 <a href="https://www.github.com/johnangelmx">JohnAngelMX</a>.</strong>
         Derechos Reservados.
         <div class="float-right d-none d-sm-inline-block">
             <b>Version</b> 1.0.0
@@ -270,10 +281,10 @@
 
 <!-- REQUIRED SCRIPTS -->
 
-<!--&lt;!&ndash; Panel &ndash;&gt;-->
-<!--<script src="../js/usuarios.js"></script>-->
 <!-- jQuery -->
 <script src="../plugins/jquery/jquery.min.js"></script>
+<!-- Custom JS -->
+<script src="../js/usuarios.js"></script>
 <!-- Bootstrap -->
 <script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE -->

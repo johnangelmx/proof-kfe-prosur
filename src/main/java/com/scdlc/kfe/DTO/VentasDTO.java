@@ -1,18 +1,21 @@
 package com.scdlc.kfe.DTO;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class VentasDTO {
     private Long idProducto;
     private Long idUsuario;
     private int cantidad;
-    private Date fecha;
+    private LocalDate fecha;
+    private BigDecimal total;
 
-    public VentasDTO(Long idProducto, Long idUsuario, int cantidad, Date fecha) {
+    public VentasDTO(Long idProducto, Long idUsuario, int cantidad, LocalDate fecha, BigDecimal total) {
         this.idProducto = idProducto;
         this.idUsuario = idUsuario;
         this.cantidad = cantidad;
         this.fecha = fecha;
+        this.total = total;
     }
 
     public Long getIdProducto() {
@@ -39,16 +42,30 @@ public class VentasDTO {
         this.cantidad = cantidad;
     }
 
-    public Date getFecha() {
+    public LocalDate getFecha() {
         return fecha;
     }
 
-    public void setFecha(Date fecha) {
+    public void setFecha(LocalDate fecha) {
         this.fecha = fecha;
+    }
+
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
     }
 
     @Override
     public String toString() {
-        return "VentasDTO{" + "idProducto=" + idProducto + ", idUsuario=" + idUsuario + ", cantidad=" + cantidad + ", fecha=" + fecha + '}';
+        return "VentasDTO{" +
+                "idProducto=" + idProducto +
+                ", idUsuario=" + idUsuario +
+                ", cantidad=" + cantidad +
+                ", fecha=" + fecha +
+                ", total=" + total +
+                '}';
     }
 }

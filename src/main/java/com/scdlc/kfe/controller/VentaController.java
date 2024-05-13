@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -61,18 +63,18 @@ public class VentaController {
 
     @GetMapping("/mes")
     public List<Venta> obtenerVentasMes(@RequestParam("mes") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate mes) {
-        LocalDate primerDiaMes = mes.withDayOfMonth(1);
-        LocalDate ultimoDiaMes = mes.withDayOfMonth(mes.lengthOfMonth());
+        LocalDate primerDiaMes = mes.withDayOfMonth( 1 );
+        LocalDate ultimoDiaMes = mes.withDayOfMonth( mes.lengthOfMonth() );
 
-        Date fechaInicio = java.sql.Date.valueOf(primerDiaMes);
-        Date fechaFin = java.sql.Date.valueOf(ultimoDiaMes);
+        Date fechaInicio = java.sql.Date.valueOf( primerDiaMes );
+        Date fechaFin = java.sql.Date.valueOf( ultimoDiaMes );
 
-        return ventaService.obtenerVentasMes(fechaInicio, fechaFin);
+        return ventaService.obtenerVentasMes( fechaInicio, fechaFin );
     }
 
 
     @PostMapping("/crear")
-    public ResponseEntity<Venta> crearVenta(@RequestBody VentasDTO ventasDTO) {
+    public ResponseEntity<Venta> crearVenta(@RequestBody VentasDTO ventasDTO) throws ParseException {
         Venta venta = ventaService.crearVenta( ventasDTO );
         return new ResponseEntity<>( venta, HttpStatus.CREATED );
     }
@@ -84,8 +86,12 @@ public class VentaController {
     }
 
     @PutMapping(path = "{ventaId}")
-    public ResponseEntity<Venta> editarVenta(@PathVariable("ventaId") Long id, @RequestParam Long idProducto, @RequestParam Long idUsuario, @RequestParam int cantidad, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fecha) {
-        Venta ventaEditada = ventaService.editarVenta( id, idProducto, idUsuario, cantidad, fecha );
+    public ResponseEntity<Venta> editarVenta(@PathVariable("ventaId") Long id, @RequestParam Long idProducto,
+                                             @RequestParam Long idUsuario,
+                                             @RequestParam int cantidad,
+                                             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fecha,
+                                             @RequestParam BigDecimal total) {
+        Venta ventaEditada = ventaService.editarVenta( id, idProducto, idUsuario, cantidad, fecha, total );
         return new ResponseEntity<>( ventaEditada, HttpStatus.OK );
     }
 }

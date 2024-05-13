@@ -11,6 +11,7 @@ import com.scdlc.kfe.repository.VentaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -42,8 +43,7 @@ public class VentaService {
 
     public List<Producto> obtenerTresProductosMasVendidos() {
         List<Long> idsProductosMasVendidos = ventaRepository.findTop3ProductosMasVendidos();
-        List<Producto> productosMasVendidos = productoRepository.findAllById( idsProductosMasVendidos );
-        return productosMasVendidos;
+        return productoRepository.findAllById( idsProductosMasVendidos );
     }
 
     public ProductoVentasStock obtenerVentasYStockPorProducto(Long idProducto) {
@@ -59,13 +59,13 @@ public class VentaService {
         if (producto.getCantidadStock() < ventasDTO.getCantidad()) {
             throw new IllegalArgumentException( "La cantidad solicitada excede el stock disponible" );
         }
-
+        Date fecha = java.sql.Date.valueOf( ventasDTO.getFecha() );
         Venta venta = new Venta();
         venta.setProducto( producto );
         venta.setUsuario( usuario );
         venta.setCantidad( ventasDTO.getCantidad() );
-        venta.setFecha( ventasDTO.getFecha() );
-
+        venta.setFecha( fecha );
+        venta.setTotal( ventasDTO.getTotal() );
         producto.setCantidadStock( producto.getCantidadStock() - ventasDTO.getCantidad() );
         productoRepository.save( producto );
 
@@ -82,7 +82,7 @@ public class VentaService {
         ventaRepository.delete( venta );
     }
 
-    public Venta editarVenta(Long id, Long idProducto, Long idUsuario, int cantidad, Date fecha) {
+    public Venta editarVenta(Long id, Long idProducto, Long idUsuario, int cantidad, Date fecha, BigDecimal total) {
         Venta venta = ventaRepository.findById( id ).orElseThrow( () -> new IllegalArgumentException( "Venta no encontrada" ) );
         Producto producto = productoRepository.findById( idProducto ).orElseThrow( () -> new IllegalArgumentException( "Producto no encontrado" ) );
         Usuario usuario = usuarioRepository.findById( idUsuario ).orElseThrow( () -> new IllegalArgumentException( "Usuario no encontrado" ) );
@@ -101,6 +101,7 @@ public class VentaService {
         venta.setUsuario( usuario );
         venta.setCantidad( cantidad );
         venta.setFecha( fecha );
+        venta.setTotal( total );
 
         return ventaRepository.save( venta );
     }

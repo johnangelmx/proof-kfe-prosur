@@ -1,6 +1,7 @@
 package com.scdlc.kfe.model;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -23,12 +24,15 @@ public class Venta {
     @Temporal(TemporalType.DATE)
     private Date fecha;
 
-    public Venta(Long id, Producto producto, Usuario usuario, int cantidad, Date fecha) {
+    private BigDecimal total;
+
+    public Venta(Long id, Producto producto, Usuario usuario, int cantidad, Date fecha, BigDecimal total) {
         this.id = id;
         this.producto = producto;
         this.usuario = usuario;
         this.cantidad = cantidad;
         this.fecha = fecha;
+        this.total = total;
     }
 
     public Venta() {
@@ -74,9 +78,17 @@ public class Venta {
         this.fecha = fecha;
     }
 
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
+
     @Override
     public String toString() {
-        return "Venta{" + "id=" + id + ", producto=" + producto + ", usuario=" + usuario + ", cantidad=" + cantidad + ", fecha=" + fecha + '}';
+        return "Venta{" + "id=" + id + ", producto=" + producto + ", usuario=" + usuario + ", cantidad=" + cantidad + ", fecha=" + fecha + ", total=" + total + '}';
     }
 }
 

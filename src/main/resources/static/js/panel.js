@@ -25,11 +25,13 @@ const addInfoSidebar = async (data) => {
 // ----------------------------------------------------------------
 // #region Funciones
 const obtenerFechaActual = () => {
-    return (new Date().toISOString().slice(0, 10));
-}
+    const fechaLocal = new Date(Date.now() - (new Date().getTimezoneOffset() * 60000));
+    return fechaLocal.toISOString().slice(0, 10);
+};
 
 // Ingresar informacion a las cards
 const ventasHoy = async () => {
+    console.log(obtenerFechaActual().toString())
     try {
         const response = await fetch(`/api/ventas/hoy?hoy=${obtenerFechaActual().toString()}`, {
             headers: {

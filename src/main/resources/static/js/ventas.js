@@ -1,5 +1,15 @@
 // #region DOM
-
+const selProducto = document.querySelector('#selProducto');
+const selUsuario = document.querySelector('#selUsuario');
+const inputCantidad = document.querySelector('#inputCantidad');
+const inputTotal = document.querySelector('#inputTotal');
+const btnGuardar = document.querySelector('#btnGuardar');
+const selProductoNew = document.querySelector('#selProductoNew');
+const selUsuarioNew = document.querySelector('#selUsuarioNew');
+const inputCantidadNew = document.querySelector('#inputCantidadNew');
+const inputTotalNew = document.querySelector('#inputTotalNew');
+const btnGuardarVenta = document.querySelector('#btn-guardarVenta');
+const btnAgregarNuevaVenta = document.querySelector('#btnAgregarNuevaVenta');
 // #region Verificacion de inicio
 const verifySession = () => {
     const data = JSON.parse(localStorage.getItem('sessionId'));
@@ -52,7 +62,7 @@ async function recreateDataTable() {
     if ($.fn.DataTable.isDataTable("#datatable")) {
         $("#datatable").DataTable().destroy();
     }
-    await listProducts();
+    await listVentas();
     // Inicializar una nueva instancia de DataTable con los datos actualizados
     dataTable = $("#datatable").DataTable(dataTableOptions).buttons().container().appendTo('#datatable_wrapper .col-md-6:eq(0)');
     // Establecer la bandera de inicialización en true
@@ -81,111 +91,85 @@ const addInfoSidebar = async () => {
     document.querySelector('#usuarioPanelDerecho').innerText = `${userdata.nombre}`
 }
 
-const listProducts = async () => {
+const listVentas = async () => {
     const data = verifySession();
-//     Peticion
-    const response = await fetch("/api/productos/")
-    const products = await response.json()
+    const response = await fetch("/api/ventas/", {
+        headers: {"Authorization": "Bearer: " + data.token}
+    })
+    const ventas = await response.json()
 
     let content = ``;
-    products.forEach((prod, index) => {
-        let btnRol;
+    ventas.forEach((venta, index) => {
         content += `
             <tr>
-                <td>${prod.id}</td>
-                <td>${prod.nombre}</td>
-                <td>${prod.descripcion}</td>
-                <td>${prod.precio}</td>
-                <td>${prod.cantidadStock}</td>
+                <td>${venta.id}</td>
+                <td>${venta.producto.nombre}</td>
+                <td>${venta.producto.precio}</td>
+                <td>${venta.usuario.nombre}</td>
+                <td>${venta.cantidad}</td>
+                <td>${venta.fecha}</td>
+                <td>${venta.total}</td>
                 <td>
-                    <button data-identifier="${prod.id}" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal-editar" id="editar"><i class="fas fa-pen"></i></button>
-                    <button data-identifier="${prod.id}" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#modal-danger" id="eliminar"><i class="fas fa-trash"></i></button>
+                    <button data-identifier="${venta.id}" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal-editar" id="editar"><i class="fas fa-pen"></i></button>
+                    <button data-identifier="${venta.id}" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#modal-danger" id="eliminar"><i class="fas fa-trash"></i></button>
                 </td>
                 
             </tr>
             `
     });
-    // Variable global para almacenar el identificador
-    let identifier;
-    // EDITAR USUARIO
+
+    // EDITAR
     $('#datatable').off('click', '#editar').on('click', '#editar', async function (event) {
-        identifier = $(this).data('identifier');
-        const response = await fetch(`/api/productos/${identifier}`, {
+        desplegarProductos();
+        desplegarUsuarios();
+
+        const response = await fetch(`/api/ventas/${$(this).data('identifier')}`, {
             headers: {
                 "Authorization": "Bearer: " + data.token
             }
         });
+        const venta = await response.json();
         if (response.ok) {
-            const producto = await response.json();
-            inputNombre.value = producto.nombre;
-            inputDescripcion.value = producto.descripcion;
-            inputPrecio.value = producto.precio;
-            inputcantidadStock.value = producto.cantidadStock;
+            selProducto.value = venta.producto.nombre;
+            selUsuario.value = venta.usuario.nombre;
+            inputCantidad.value = venta.cantidad;
+            inputTotal.value = (venta.producto.precio * venta.cantidad);
         } else {
             redirectLogin();
         }
 
         btnGuardar.addEventListener("click", async () => {
-            const nombreRegex = /^[\w\dáéíóúÁÉÍÓÚüÜñÑ\s\S]{1,250}$/;
-            const descripcionRegex = /^[\w\dáéíóúÁÉÍÓÚüÜñÑ\s\S]{1,250}$/;
-            const precioRegex = /^\d+(\.\d{1,2})?$/;
-            const cantidadStockRegex = /^\d+$/;
+            const opcionProducto = selProducto.options[selProducto.selectedIndex];
+            const opcionUsuario = selUsuario.options[selUsuario.selectedIndex];
+            const idProducto = opcionProducto.getAttribute('data-target');
+            const params = {
+                idProducto: `${idProducto}`,
+                idUsuario: `${opcionUsuario.getAttribute('data-target')}`,
+                cantidad: `${inputCantidad.value}`,
+                fecha: `${obtenerFechaActual()}`,
+                total: await nuevoTotal(idProducto, inputCantidad.value),
+            };
 
-            let isOk = true;
+            const queryParams = new URLSearchParams(params).toString();
+            const urlWithParams = `/api/ventas/${$(this).data('identifier')}?${queryParams}`;
 
-            if (!nombreRegex.test(inputNombre.value.trim())) {
-                toastr.remove();
-                toastr["error"]("El nombre debe contener solo letras y espacios.");
-                isOk = false;
-            }
-
-            if (!descripcionRegex.test(inputDescripcion.value.trim())) {
-                toastr.remove();
-                toastr["error"]("La descripción debe contener letras, números, espacios en blanco y los caracteres -, .,.");
-                isOk = false;
-            }
-
-            if (!precioRegex.test(inputPrecio.value.trim())) {
-                toastr.remove();
-                toastr["error"]("El precio debe ser un número válido (pueden ser decimales con hasta dos dígitos después del punto).");
-                isOk = false;
-            }
-
-            if (!cantidadStockRegex.test(inputcantidadStock.value.trim())) {
-                toastr.remove();
-                toastr["error"]("La cantidad de stock debe ser un número entero positivo.");
-                isOk = false;
-            }
-
-
-            if (isOk) {
-                const params = {
-                    nombre: `${inputNombre.value}`,
-                    descripcion: `${inputDescripcion.value}`,
-                    precio: `${inputPrecio.value}`,
-                    cantidadStock: `${inputcantidadStock.value}`
-                };
-
-                const queryParams = new URLSearchParams(params).toString();
-                const urlWithParams = `/api/productos/${identifier}?${queryParams}`;
-
-                const response = await fetch(urlWithParams, {
-                    method: 'PUT', headers: {
-                        'Authorization': `Bearer: ${data.token}`
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    // Manejar la respuesta exitosa
-                    closeModal();
-                    toastr.remove(); // Eliminar todos los mensajes de Toastr visibles y ocultos
-                    toastr["success"]("Actualización completada"); // Mostrar el nuevo mensaje de éxito
-                    await recreateDataTable();
-                } else {
-                    redirectLogin();
+            const response = await fetch(urlWithParams, {
+                method: 'PUT', headers: {
+                    'Authorization': `Bearer: ${data.token}`
                 }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Manejar la respuesta exitosa
+                closeModal();
+                toastr.remove(); // Eliminar todos los mensajes de Toastr visibles y ocultos
+                toastr["success"]("Actualización completada"); // Mostrar el nuevo mensaje de éxito
+                await recreateDataTable();
+            } else {
+                redirectLogin();
             }
+
         })
     });
 
@@ -193,7 +177,7 @@ const listProducts = async () => {
     $('#datatable').off('click', '#eliminar').on('click', '#eliminar', async function (event) {
         const data = verifySession();
         btnModalEliminar.addEventListener("click", async () => {
-            const response = await fetch(`/api/productos/${$(this).data('identifier')}`, {
+            const response = await fetch(`/api/ventas/${$(this).data('identifier')}`, {
                 method: 'DELETE', headers: {
                     'Authorization': `Bearer: ${data.token}`
                 }
@@ -205,7 +189,7 @@ const listProducts = async () => {
                 toastr["success"]("Eliminación de usuario completada");
                 await recreateDataTable();
             } else {
-                // redirectLogin();
+                redirectLogin();
             }
         })
     });
@@ -214,16 +198,21 @@ const listProducts = async () => {
     tableBody.innerHTML = content;
 }
 // Registrar una nueva venta
-const registrarProducto = async () => {
+const registrarVenta = async () => {
     const data = verifySession();
+    const opcionProducto = selProductoNew.options[selProductoNew.selectedIndex];
+    const opcionUsuario = selUsuarioNew.options[selUsuarioNew.selectedIndex];
+    const idProducto = opcionProducto.getAttribute('data-target');
     let body = {
-        nombre: `${inNombre.value}`,
-        descripcion: `${inDescripcion.value}`,
-        precio: `${inPrecio.value}`,
-        cantidadStock: `${incantidadStock.value}`
+        idProducto: `${idProducto}`,
+        idUsuario: `${opcionUsuario.getAttribute('data-target')}`,
+        cantidad: `${inputCantidadNew.value}`,
+        fecha: `${obtenerFechaActual()}`,
+        total: await nuevoTotal(idProducto, inputCantidadNew.value)
     }
+    console.log(body)
     try {
-        const resp = await fetch(`/api/productos/`, {
+        const resp = await fetch(`/api/ventas/crear`, {
             method: 'POST', headers: {
                 'Content-Type': 'application/json', 'Authorization': `Bearer: ${data.token}`
             }, mode: 'cors', body: JSON.stringify(body)
@@ -237,49 +226,110 @@ const registrarProducto = async () => {
     }
 
 }
-const validarCampos = () => {
-    const nombreRegex = /^[\w\dáéíóúÁÉÍÓ��üÜñÑ\s\S]{1,250}$/;
-    const descripcionRegex = /^[\w\dáéíóúÁÉÍÓÚüÜñÑ\s\S]{1,250}$/;
-    const precioRegex = /^\d+(\.\d{1,2})?$/;
-    const cantidadStockRegex = /^\d+$/;
-
-    let isOk = true;
-
-    if (!nombreRegex.test(inNombre.value.trim())) {
-        toastr.remove();
-        toastr["error"]("El nombre debe contener solo letras y espacios.");
-        isOk = false;
-    }
-    if (!descripcionRegex.test(inDescripcion.value.trim())) {
-        toastr.remove();
-        toastr["error"]("La descripción debe contener letras, números, espacios en blanco y los caracteres -, .,.");
-        isOk = false;
-    }
-    if (!precioRegex.test(inPrecio.value.trim())) {
-        toastr.remove();
-        toastr["error"]("El precio debe ser un número válido (pueden ser decimales con hasta dos dígitos después del punto).");
-        isOk = false;
-    }
-    if (!cantidadStockRegex.test(incantidadStock.value.trim())) {
-        toastr.remove();
-        toastr["error"]("La cantidad de stock debe ser un número entero positivo.");
-        isOk = false;
-    }
-    return isOk;
-}
-
-const limpiarInputs = () => {
-    inNombre.value = "";
-    inDescripcion.value = "";
-    inPrecio.value = "";
-    incantidadStock.value = "";
-}
 
 // Funcion para cerrar el Modal
 const closeModal = () => {
     $('#modal-danger').modal('hide');
     $('#modal-new-user').modal('hide')
     $('#modal-editar').modal('hide')
+}
+// Funcion para desplegar productos select
+const desplegarProductos = async () => {
+    const data = verifySession();
+    const response = await fetch(`/api/productos/`, {
+        headers: {
+            "Authorization": "Bearer: " + data.token
+        }
+    });
+    if (response.ok) {
+        const productos = await response.json();
+        productos.forEach(producto => {
+            selProducto.innerHTML += `
+            <option value="${producto.nombre}" data-target="${producto.id}">${producto.nombre}</option>
+            `
+        });
+    } else {
+        redirectLogin();
+    }
+}
+// funcion para desplegar usuarios select
+const desplegarUsuarios = async () => {
+    const data = verifySession();
+    const response = await fetch(`/api/usuarios/`, {
+        headers: {
+            "Authorization": "Bearer: " + data.token
+        }
+    });
+    if (response.ok) {
+        const usuarios = await response.json();
+        usuarios.forEach(usuario => {
+            selUsuario.innerHTML += `
+            <option value="${usuario.nombre}" data-target="${usuario.id}">${usuario.nombre}</option>
+            `
+        });
+    } else {
+        redirectLogin();
+    }
+}// Funcion para desplegar productos select
+const desplegarProductosNew = async () => {
+    console.log('Desplegar productos new');
+    const data = verifySession();
+    const response = await fetch(`/api/productos/`, {
+        headers: {
+            "Authorization": "Bearer: " + data.token
+        }
+    });
+    if (response.ok) {
+        const productos = await response.json();
+        productos.forEach(producto => {
+            selProductoNew.innerHTML += `
+            <option value="${producto.nombre}" data-target="${producto.id}">${producto.nombre}</option>
+            `
+        });
+    } else {
+        redirectLogin();
+    }
+}
+// funcion para desplegar usuarios select
+const desplegarUsuariosNew = async () => {
+    console.log('desplegarUsuarios new')
+    const data = verifySession();
+    const response = await fetch(`/api/usuarios/`, {
+        headers: {
+            "Authorization": "Bearer: " + data.token
+        }
+    });
+    if (response.ok) {
+        const usuarios = await response.json();
+        usuarios.forEach(usuario => {
+            selUsuarioNew.innerHTML += `
+            <option value="${usuario.nombre}" data-target="${usuario.id}">${usuario.nombre}</option>
+            `
+        });
+    } else {
+        redirectLogin();
+    }
+}
+const obtenerFechaActual = () => {
+    const fechaLocal = new Date(Date.now() - (new Date().getTimezoneOffset() * 60000));
+    return fechaLocal.toISOString().slice(0, 10);
+};
+const nuevoTotal = async (idProducto, cantidad) => {
+    let nuevoTotal = 0
+    const data = verifySession();
+    const response = await fetch(`/api/productos/${idProducto}`, {
+        headers: {
+            "Authorization": "Bearer: " + data.token
+        }
+    });
+    const producto = await response.json();
+    return producto.precio * cantidad;
+}
+const limpiarInputs = () => {
+    inputCantidadNew.value = '';
+    inputTotalNew.value = '';
+    inputCantidad.value = '';
+    inputTotal.value = '';
 }
 // #region Listeners
 // central
@@ -288,15 +338,17 @@ window.addEventListener("load", async () => {
     await addInfoSidebar();
     await initDataTable();
 })
-btnGuardarNewUser.addEventListener("click", async () => {
+btnAgregarNuevaVenta.addEventListener("click", async () => {
+    await desplegarProductosNew();
+    await desplegarUsuariosNew();
+})
+btnGuardarVenta.addEventListener("click", async () => {
     event.preventDefault();
-    if (validarCampos()) {
-        if (await registrarProducto()) {
-            toastr["success"]("Todos los campos son válidos. ¡Registrado exitosamente!");
-            await recreateDataTable();
-            closeModal();
-            limpiarInputs();
-        }
+    if (await registrarVenta()) {
+        toastr["success"]("Todos los campos son válidos. ¡Registrado exitosamente!");
+        await recreateDataTable();
+        closeModal();
+        limpiarInputs();
     }
 })
 

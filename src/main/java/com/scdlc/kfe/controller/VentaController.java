@@ -40,9 +40,10 @@ public class VentaController {
     }
 
     @GetMapping("/periodo")
-    public List<Venta> obtenerVentasPeriodo(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fechaInicio, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fechaFin) {
-
-        return ventaService.obtenerVentasPorPeriodo( fechaInicio, fechaFin );
+    public List<Venta> obtenerVentasPeriodo(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+        Date fechaInicial = java.sql.Date.valueOf( fechaInicio );
+        Date fechaFinal = java.sql.Date.valueOf( fechaFin );
+        return ventaService.obtenerVentasPorPeriodo( fechaInicial, fechaFinal );
     }
 
     @GetMapping("/mas_vendidos")

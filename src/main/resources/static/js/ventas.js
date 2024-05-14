@@ -10,6 +10,9 @@ const inputCantidadNew = document.querySelector('#inputCantidadNew');
 const inputTotalNew = document.querySelector('#inputTotalNew');
 const btnGuardarVenta = document.querySelector('#btn-guardarVenta');
 const btnAgregarNuevaVenta = document.querySelector('#btnAgregarNuevaVenta');
+const rangePicker = document.querySelector('#RangePicker');
+const btnrangePicker = document.querySelector('#btn-rangePicker');
+let isRange;
 // #region Verificacion de inicio
 const verifySession = () => {
     const data = JSON.parse(localStorage.getItem('sessionId'));
@@ -62,7 +65,7 @@ async function recreateDataTable() {
     if ($.fn.DataTable.isDataTable("#datatable")) {
         $("#datatable").DataTable().destroy();
     }
-    await listVentas();
+    await listVentas(isRange);
     // Inicializar una nueva instancia de DataTable con los datos actualizados
     dataTable = $("#datatable").DataTable(dataTableOptions).buttons().container().appendTo('#datatable_wrapper .col-md-6:eq(0)');
     // Establecer la bandera de inicialización en true
@@ -70,8 +73,8 @@ async function recreateDataTable() {
 }
 
 // Inicialización inicial de la DataTable
-const initDataTable = async () => {
-    await recreateDataTable();
+const initDataTable = async (isRange) => {
+    await recreateDataTable(isRange);
 };
 
 // Obteniendo Usuario
@@ -90,14 +93,46 @@ const addInfoSidebar = async () => {
     let userdata = await obtenerUsuario()
     document.querySelector('#usuarioPanelDerecho').innerText = `${userdata.nombre}`
 }
-
-const listVentas = async () => {
+const obtenerDatosVentas = async () => {
     const data = verifySession();
     const response = await fetch("/api/ventas/", {
         headers: {"Authorization": "Bearer: " + data.token}
-    })
-    const ventas = await response.json()
+    });
+    return await response.json();
+};
+const obtenerNuevasVentas = async () => {
+    const data = verifySession();
+    const inputValue = rangePicker.value;
+    const fechas = inputValue.split(" - ");
+it
+    function formatDate(dateString) {
+        const [month, day, year] = dateString.split("/");
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
 
+    const fechaInicio = formatDate(fechas[0]);
+    const fechaFin = formatDate(fechas[1]);
+    console.log(`/api/ventas/periodo?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
+    const response = await fetch(`/api/ventas/periodo?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`, {
+        method: 'GET', headers: {
+            'Authorization': `Bearer: ${data.token}`
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error("No se pudieron obtener las ventas");
+    }
+
+    return await response.json();
+};
+
+const listVentas = async (isRange) => {
+    let ventas;
+    if (isRange) {
+        ventas = await obtenerNuevasVentas();
+    } else {
+        ventas = await obtenerDatosVentas();
+    }
     let content = ``;
     ventas.forEach((venta, index) => {
         content += `
@@ -336,7 +371,8 @@ const limpiarInputs = () => {
 window.addEventListener("load", async () => {
     verifySession();
     await addInfoSidebar();
-    await initDataTable();
+    isRange = false;
+    await initDataTable(isRange);
 })
 btnAgregarNuevaVenta.addEventListener("click", async () => {
     await desplegarProductosNew();
@@ -350,6 +386,11 @@ btnGuardarVenta.addEventListener("click", async () => {
         closeModal();
         limpiarInputs();
     }
+})
+
+btnrangePicker.addEventListener("click", async () => {
+    isRange = true;
+    await initDataTable(isRange);
 })
 
 

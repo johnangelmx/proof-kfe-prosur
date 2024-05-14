@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/ventas/")
 public class VentaController {
 
@@ -86,11 +87,7 @@ public class VentaController {
     }
 
     @PutMapping(path = "{ventaId}")
-    public ResponseEntity<Venta> editarVenta(@PathVariable("ventaId") Long id, @RequestParam Long idProducto,
-                                             @RequestParam Long idUsuario,
-                                             @RequestParam int cantidad,
-                                             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fecha,
-                                             @RequestParam BigDecimal total) {
+    public ResponseEntity<Venta> editarVenta(@PathVariable("ventaId") Long id, @RequestParam Long idProducto, @RequestParam Long idUsuario, @RequestParam int cantidad, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fecha, @RequestParam BigDecimal total) {
         Venta ventaEditada = ventaService.editarVenta( id, idProducto, idUsuario, cantidad, fecha, total );
         return new ResponseEntity<>( ventaEditada, HttpStatus.OK );
     }

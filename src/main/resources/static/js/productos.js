@@ -138,7 +138,7 @@ const listProducts = async () => {
             const nombreRegex = /^[\w\dáéíóúÁÉÍÓÚüÜñÑ\s]{1,250}$/;
             const descripcionRegex = /^[\w\dáéíóúÁÉÍÓÚüÜñÑ\s\S]{1,250}$/;
             const precioRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
-            const cantidadStockRegex= /^[0-9]+$/;
+            const cantidadStockRegex = /^[0-9]+$/;
 
             let isOk = true;
 

@@ -12,6 +12,7 @@ const btnGuardarVenta = document.querySelector('#btn-guardarVenta');
 const btnAgregarNuevaVenta = document.querySelector('#btnAgregarNuevaVenta');
 const rangePicker = document.querySelector('#RangePicker');
 const btnrangePicker = document.querySelector('#btn-rangePicker');
+
 let isRange;
 // #region Verificacion de inicio
 const verifySession = () => {
@@ -245,7 +246,8 @@ const registrarVenta = async () => {
         fecha: `${obtenerFechaActual()}`,
         total: await nuevoTotal(idProducto, inputCantidadNew.value)
     }
-    console.log(body)
+    toastr.remove();
+    toastr["info"](`TOTAL: $ ${await nuevoTotal(idProducto, inputCantidadNew.value)} PESOS`);
     try {
         const resp = await fetch(`/api/ventas/crear`, {
             method: 'POST', headers: {
@@ -366,6 +368,17 @@ const limpiarInputs = () => {
     inputCantidad.value = '';
     inputTotal.value = '';
 }
+// funcion para validar datos
+const validarCamposNew = () => {
+    const cantidadStockRegex = /^[0-9]+$/;
+    if (!cantidadStockRegex.test(inputCantidadNew.value.trim())) {
+        toastr.remove();
+        toastr["error"]("La cantidad debe ser un número válido.");
+        return false;
+    }
+    return true;
+}
+
 // #region Listeners
 // central
 window.addEventListener("load", async () => {
@@ -380,11 +393,13 @@ btnAgregarNuevaVenta.addEventListener("click", async () => {
 })
 btnGuardarVenta.addEventListener("click", async () => {
     event.preventDefault();
-    if (await registrarVenta()) {
-        toastr["success"]("Todos los campos son válidos. ¡Registrado exitosamente!");
-        await recreateDataTable();
-        closeModal();
-        limpiarInputs();
+    if (validarCamposNew()) {
+        if (await registrarVenta()) {
+            toastr["success"]("Todos los campos son válidos. ¡Registrado exitosamente!");
+            await recreateDataTable();
+            closeModal();
+            limpiarInputs();
+        }
     }
 })
 
@@ -392,5 +407,3 @@ btnrangePicker.addEventListener("click", async () => {
     isRange = true;
     await initDataTable(isRange);
 })
-
-

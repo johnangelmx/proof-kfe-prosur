@@ -6,7 +6,7 @@ const inputNombre = document.querySelector('#inputNombre'),
     btnGuardar = document.querySelector('#btnGuardar'), btnModalEliminar = document.querySelector('#btnModalEliminar'),
     inNombre = document.querySelector("#inNombre"), inDescripcion = document.querySelector("#inDescripcion"),
     inPrecio = document.querySelector("#inPrecio"), incantidadStock = document.querySelector("#incantidadStock"),
-    btnGuardarNewUser = document.querySelector("#btn-guardarNewUser"),
+    btnGuardarNewProducto = document.querySelector("#btnGuardarNewProducto"),
     ventasPorMesChart = document.querySelector("#ventasPorMesChart")
 // #region Verificacion de inicio
 const verifySession = () => {
@@ -135,10 +135,10 @@ const listProducts = async () => {
         }
 
         btnGuardar.addEventListener("click", async () => {
-            const nombreRegex = /^[\w\dáéíóúÁÉÍÓÚüÜñÑ\s\S]{1,250}$/;
+            const nombreRegex = /^[\w\dáéíóúÁÉÍÓÚüÜñÑ\s]{1,250}$/;
             const descripcionRegex = /^[\w\dáéíóúÁÉÍÓÚüÜñÑ\s\S]{1,250}$/;
-            const precioRegex = /^\d+(\.\d{1,2})?$/;
-            const cantidadStockRegex = /^\d+$/;
+            const precioRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
+            const cantidadStockRegex= /^[0-9]+$/;
 
             let isOk = true;
 
@@ -282,33 +282,32 @@ const registrarProducto = async () => {
 
 }
 const validarCampos = () => {
-    const nombreRegex = /^[\w\dáéíóúÁÉÍÓ��üÜñÑ\s\S]{1,250}$/;
+    const nombreRegex = /^[\w\dáéíóúÁÉÍÓÚüÜñÑ\s]{1,250}$/;
     const descripcionRegex = /^[\w\dáéíóúÁÉÍÓÚüÜñÑ\s\S]{1,250}$/;
-    const precioRegex = /^\d+(\.\d{1,2})?$/;
-    const cantidadStockRegex = /^\d+$/;
-
+    const precioRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
+    const cantidadStockRegex = /^[0-9]+$/;
     let isOk = true;
 
     if (!nombreRegex.test(inNombre.value.trim())) {
-        toastr.remove();
         toastr["error"]("El nombre debe contener solo letras y espacios.");
         isOk = false;
     }
+
     if (!descripcionRegex.test(inDescripcion.value.trim())) {
-        toastr.remove();
         toastr["error"]("La descripción debe contener letras, números, espacios en blanco y los caracteres -, .,.");
         isOk = false;
     }
+
     if (!precioRegex.test(inPrecio.value.trim())) {
-        toastr.remove();
         toastr["error"]("El precio debe ser un número válido (pueden ser decimales con hasta dos dígitos después del punto).");
         isOk = false;
     }
+
     if (!cantidadStockRegex.test(incantidadStock.value.trim())) {
-        toastr.remove();
         toastr["error"]("La cantidad de stock debe ser un número entero positivo.");
         isOk = false;
     }
+
     return isOk;
 }
 
@@ -332,7 +331,7 @@ window.addEventListener("load", async () => {
     await addInfoSidebar();
     await initDataTable();
 })
-btnGuardarNewUser.addEventListener("click", async () => {
+btnGuardarNewProducto.addEventListener("click", async () => {
     event.preventDefault();
     if (validarCampos()) {
         if (await registrarProducto()) {

@@ -6,7 +6,8 @@ const inputNombre = document.querySelector('#inputNombre'),
     btnGuardar = document.querySelector('#btnGuardar'), btnModalEliminar = document.querySelector('#btnModalEliminar'),
     inNombre = document.querySelector("#inNombre"), inDescripcion = document.querySelector("#inDescripcion"),
     inPrecio = document.querySelector("#inPrecio"), incantidadStock = document.querySelector("#incantidadStock"),
-    btnGuardarNewUser = document.querySelector("#btn-guardarNewUser")
+    btnGuardarNewUser = document.querySelector("#btn-guardarNewUser"),
+    ventasPorMesChart = document.querySelector("#ventasPorMesChart")
 // #region Verificacion de inicio
 const verifySession = () => {
     const data = JSON.parse(localStorage.getItem('sessionId'));
@@ -105,6 +106,7 @@ const listProducts = async () => {
                 <td>${prod.precio}</td>
                 <td>${prod.cantidadStock}</td>
                 <td>
+                    <button data-identifier="${prod.id}" class="btn btn-sm btn-success" data-toggle="modal" data-target="#modal-xl" id="grafica"><i class="fas fa-chart-bar"></i></button>
                     <button data-identifier="${prod.id}" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal-editar" id="editar"><i class="fas fa-pen"></i></button>
                     <button data-identifier="${prod.id}" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#modal-danger" id="eliminar"><i class="fas fa-trash"></i></button>
                 </td>
@@ -196,6 +198,41 @@ const listProducts = async () => {
         })
     });
 
+    // Graficar
+    $('#datatable').off('click', '#grafica').on('click', '#grafica', async function (event) {
+        identifier = $(this).data('identifier');
+        const response = await fetch(`/api/ventas/ventas-por-mes/${identifier}`, {
+            headers: {
+                "Authorization": "Bearer: " + data.token
+            }
+        });
+
+        if (response.ok) {
+            const datosVentasPorMes = await response.json();
+            // Obtener el contexto del canvas
+            const ctx = ventasPorMesChart.getContext('2d');
+
+            // Verificar si hay un gráfico existente y destruirlo si es necesario
+            if (window.ventasPorMesChart && window.ventasPorMesChart instanceof Chart) {
+                window.ventasPorMesChart.destroy();
+            }
+
+            window.ventasPorMesChart = new Chart(ctx, {
+                type: 'bar', data: {
+                    labels: datosVentasPorMes.map(venta => `Mes ${venta.mes}`), datasets: [{
+                        label: 'Ventas por Mes',
+                        data: datosVentasPorMes.map(venta => venta.totalVenta),
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+
+                }
+            });
+        } else {
+            throw new Error('Id invalid')
+        }
+    });
     // ELIMINAR
     $('#datatable').off('click', '#eliminar').on('click', '#eliminar', async function (event) {
         const data = verifySession();

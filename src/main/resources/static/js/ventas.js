@@ -104,7 +104,7 @@ const obtenerNuevasVentas = async () => {
     const data = verifySession();
     const inputValue = rangePicker.value;
     const fechas = inputValue.split(" - ");
-it
+
     function formatDate(dateString) {
         const [month, day, year] = dateString.split("/");
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;

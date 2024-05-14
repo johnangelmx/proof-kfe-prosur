@@ -1,6 +1,7 @@
 package com.scdlc.kfe.controller;
 
 import com.scdlc.kfe.DTO.ProductoVentasStock;
+import com.scdlc.kfe.DTO.VentaPorMesDTO;
 import com.scdlc.kfe.DTO.VentasDTO;
 import com.scdlc.kfe.model.Producto;
 import com.scdlc.kfe.model.Venta;
@@ -91,5 +92,11 @@ public class VentaController {
     public ResponseEntity<Venta> editarVenta(@PathVariable("ventaId") Long id, @RequestParam Long idProducto, @RequestParam Long idUsuario, @RequestParam int cantidad, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fecha, @RequestParam BigDecimal total) {
         Venta ventaEditada = ventaService.editarVenta( id, idProducto, idUsuario, cantidad, fecha, total );
         return new ResponseEntity<>( ventaEditada, HttpStatus.OK );
+    }
+
+    @GetMapping("/ventas-por-mes/{productoId}")
+    public ResponseEntity<List<VentaPorMesDTO>> obtenerVentasPorMesYProducto(@PathVariable Long productoId) {
+        List<VentaPorMesDTO> ventasPorMes = ventaService.obtenerVentasPorMesYProducto(productoId);
+        return new ResponseEntity<>(ventasPorMes, HttpStatus.OK);
     }
 }

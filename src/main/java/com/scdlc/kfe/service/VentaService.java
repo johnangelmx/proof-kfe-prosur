@@ -1,6 +1,7 @@
 package com.scdlc.kfe.service;
 
 import com.scdlc.kfe.DTO.ProductoVentasStock;
+import com.scdlc.kfe.DTO.VentaPorMesDTO;
 import com.scdlc.kfe.DTO.VentasDTO;
 import com.scdlc.kfe.model.Producto;
 import com.scdlc.kfe.model.Usuario;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -112,6 +114,17 @@ public class VentaService {
 
     public List<Venta> obtenerVentasMes(Date fechaInicio, Date fechaFin) {
         return ventaRepository.findByFechaBetween( fechaInicio, fechaFin );
+    }
+
+    public List<VentaPorMesDTO> obtenerVentasPorMesYProducto(Long productoId) {
+        List<Object[]> ventasPorMes = ventaRepository.obtenerVentasPorMesYProducto( productoId );
+        List<VentaPorMesDTO> ventasPorMesDTO = new ArrayList<>();
+        for (Object[] venta : ventasPorMes) {
+            int mes = (int) venta[0];
+            long totalVenta = (long) venta[1];
+            ventasPorMesDTO.add( new VentaPorMesDTO( mes, totalVenta ) );
+        }
+        return ventasPorMesDTO;
     }
 
 }

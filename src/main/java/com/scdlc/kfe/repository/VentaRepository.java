@@ -30,4 +30,7 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
     @Transactional
     @Query("DELETE FROM Venta v WHERE v.producto.id = :productoId")
     void deleteByProductoId(@Param("productoId") Long productoId);
+
+    @Query("SELECT MONTH(v.fecha) AS mes, SUM(v.cantidad) AS totalVenta FROM Venta v WHERE v.producto.id = :productoId GROUP BY MONTH(v.fecha)")
+    List<Object[]> obtenerVentasPorMesYProducto(Long productoId);
 }
